@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WeChat Shop VN
 
-## Getting Started
+Web bán tài khoản WeChat tự động — thanh toán ngân hàng VN, giao hàng tức thì.
 
-First, run the development server:
+## Tech Stack
+
+- **Next.js 14** (App Router) — deploy miễn phí trên Vercel
+- **Supabase** — Database (PostgreSQL) + Auth + Realtime (miễn phí)
+- **Casso.vn** — Webhook nhận tiền ngân hàng VN tự động (miễn phí)
+- **VietQR** — Tạo QR chuyển khoản (miễn phí)
+- **Resend** — Gửi email thông báo (miễn phí 3000/tháng)
+
+## Setup (khoảng 30 phút)
+
+### 1. Supabase
+
+1. Tạo project tại [supabase.com](https://supabase.com)
+2. Vào **SQL Editor** → chạy toàn bộ file `supabase/schema.sql`
+3. Vào **Authentication → Providers** → bật **Google**
+   - Cần Google Client ID & Secret từ [Google Cloud Console](https://console.cloud.google.com)
+   - Authorized redirect URI: `https://your-project.supabase.co/auth/v1/callback`
+4. Lấy keys từ **Settings → API**
+
+### 2. Casso.vn
+
+1. Đăng ký tại [casso.vn](https://casso.vn)
+2. Liên kết tài khoản ngân hàng
+3. Vào **Webhook** → thêm URL: `https://your-domain.vercel.app/api/webhook/casso`
+4. Copy **Secure Token** → điền vào `CASSO_WEBHOOK_SECRET`
+
+### 3. Resend
+
+1. Đăng ký tại [resend.com](https://resend.com)
+2. Tạo API key
+3. Xác thực domain (hoặc dùng `onboarding@resend.dev` để test)
+
+### 4. Deploy lên Vercel
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm i -g vercel
+vercel
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Điền tất cả env vars trong Vercel Dashboard → Settings → Environment Variables.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Local development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cp .env.example .env.local
+# Điền đầy đủ các giá trị
 
-## Learn More
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Cấu trúc thư mục
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  page.tsx              # Homepage
+  products/             # Trang sản phẩm
+  orders/               # Quản lý đơn hàng (yêu cầu đăng nhập)
+  admin/                # Trang quản trị (yêu cầu ADMIN_EMAILS)
+  auth/callback/        # OAuth callback
+  api/webhook/casso/    # Webhook nhận tiền từ Casso
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+lib/
+  supabase/             # Supabase client (browser + server)
+  utils.ts              # Helper: formatVND, generateOrderCode, buildVietQRUrl
+  types.ts              # TypeScript types
+  email.ts              # Resend email templates
 
-## Deploy on Vercel
+supabase/
+  schema.sql            # Toàn bộ DB schema + RLS policies + functions
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Luồng hoạt động
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+1. Khách xem sản phẩm → đăng nhập Google
+2. Nhấn "Mua ngay" → tạo order với mã DH-XXXXXXXX
+3. Hiển thị QR VietQR + hướng dẫn chuyển khoản
+4. Khách CK đúng số tiền + nội dung = mã đơn
+5. Casso detect giao dịch → POST webhook đến /api/webhook/casso
+6. Server tìm order theo mã đơn trong nội dung CK
+7. Gọi DB function deliver_order_accounts → gán acc vào order
+8. Gửi email + hiển thị acc trên trang đơn hàng
+```
+
+## Admin
+
+Truy cập `/admin` với email trong biến `ADMIN_EMAILS`.
+
+- **Thêm sản phẩm**: `/admin/products`
+- **Nhập kho acc**: `/admin/accounts` (bulk import `username|password|phone|email`)
+- **Xem đơn hàng**: `/admin/orders`
