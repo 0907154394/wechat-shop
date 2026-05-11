@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { getSettings } from "@/lib/settings";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
-import { Headphones, Wallet } from "lucide-react";
+import { Headphones, Wallet, CheckCircle } from "lucide-react";
 
 function Section({ icon: Icon, color, title, desc, children }: {
   icon: React.ElementType; color: string; title: string; desc: string; children: React.ReactNode;
@@ -37,8 +37,9 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 const inputCls = "h-10 rounded-lg border border-gray-200 px-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100";
 
-export default async function AdminSettingsPage() {
+export default async function AdminSettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
   const settings = await getSettings();
+  const { saved } = await searchParams;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -46,6 +47,13 @@ export default async function AdminSettingsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Cài đặt Shop</h1>
         <p className="mt-1 text-sm text-gray-400">Quản lý thông tin thanh toán, ví USDT và kênh hỗ trợ</p>
       </div>
+
+      {saved === "1" && (
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          <CheckCircle className="h-5 w-5 shrink-0" />
+          Đã lưu cài đặt thành công!
+        </div>
+      )}
 
       <form action={saveSettingsAction} className="space-y-5">
 
@@ -132,4 +140,7 @@ async function saveSettingsAction(formData: FormData) {
 
   revalidatePath("/admin/settings");
   revalidatePath("/orders");
+
+  const { redirect } = await import("next/navigation");
+  redirect("/admin/settings?saved=1");
 }
