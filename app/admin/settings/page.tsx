@@ -113,7 +113,7 @@ export default async function AdminSettingsPage() {
 async function saveSettingsAction(formData: FormData) {
   "use server";
 
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
 
   const updates = [
     { key: "usdt_address",      value: formData.get("usdt_address") as string },
