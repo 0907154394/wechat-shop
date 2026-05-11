@@ -14,9 +14,11 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Session cookie: strip maxAge/expires so browser clears on close
+              const { maxAge, expires, ...rest } = options ?? {};
+              cookieStore.set(name, value, rest);
+            });
           } catch {}
         },
       },
@@ -37,9 +39,10 @@ export async function createAdminClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
+            cookiesToSet.forEach(({ name, value, options }) => {
+              const { maxAge, expires, ...rest } = options ?? {};
+              cookieStore.set(name, value, rest);
+            });
           } catch {}
         },
       },
