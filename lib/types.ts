@@ -17,7 +17,10 @@ export interface Order {
   amount: number;
   order_code: string;
   status: "pending" | "paid" | "delivered" | "cancelled";
+  payment_method: "wallet" | "usdt_direct" | null;
   payment_note: string | null;
+  usdt_amount: number | null;
+  usdt_tx_hash: string | null;
   paid_at: string | null;
   created_at: string;
   products?: Product;

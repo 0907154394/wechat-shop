@@ -1,129 +1,139 @@
 export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { formatVND, generateOrderCode, buildVietQRUrl } from "@/lib/utils";
+import { createClient as adminClient } from "@supabase/supabase-js";
+import { generateOrderCode } from "@/lib/utils";
 import type { Product } from "@/lib/types";
+import { ProductDetailContent } from "./ProductDetailContent";
+
+function getAdmin() {
+  return adminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
+  const sb = getAdmin();
 
-  const { data: product } = await supabase
-    .from("products")
-    .select("*")
-    .eq("id", id)
-    .eq("is_active", true)
-    .single();
+  const [{ data: product }, { data: { user } }] = await Promise.all([
+    sb.from("products").select("*").eq("id", id).eq("is_active", true).single(),
+    supabase.auth.getUser(),
+  ]);
 
   if (!product) notFound();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const p = product as Product;
+
+  const { count: realStock } = await sb
+    .from("wechat_accounts")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", id)
+    .eq("status", "available");
+
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("id, rating, comment, reviewer_name, created_at")
+    .eq("product_id", id)
+    .order("created_at", { ascending: false });
+
+  const reviewList = reviews ?? [];
+  const avgRating = reviewList.length > 0
+    ? reviewList.reduce((s, r) => s + r.rating, 0) / reviewList.length
+    : 0;
+
+  let eligibleOrderId: string | null = null;
+  let hasReviewed = false;
+  if (user) {
+    const { data: deliveredOrder } = await supabase
+      .from("orders").select("id")
+      .eq("user_id", user.id).eq("product_id", id).eq("status", "delivered")
+      .limit(1).single();
+    if (deliveredOrder) {
+      const { data: existingReview } = await supabase
+        .from("reviews").select("id").eq("order_id", deliveredOrder.id).single();
+      eligibleOrderId = deliveredOrder.id;
+      hasReviewed = !!existingReview;
+    }
+  }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">{(product as Product).name}</h1>
-        <p className="text-gray-500">{(product as Product).description}</p>
-      </div>
-
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <div>
-              <p className="text-sm text-gray-500">Giá</p>
-              <p className="text-3xl font-bold text-green-600">{formatVND((product as Product).price)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Tồn kho</p>
-              <p className="font-medium text-gray-900">
-                {(product as Product).stock > 0 ? `${(product as Product).stock} tài khoản` : "Hết hàng"}
-              </p>
-            </div>
-            <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-              ✓ Giao hàng tự động sau thanh toán<br />
-              ✓ Có số điện thoại & email backup đi kèm<br />
-              ✓ Hỗ trợ nếu có vấn đề trong 24h
-            </div>
-
-            {(product as Product).stock > 0 && (
-              <form action={createOrderAction}>
-                <input type="hidden" name="product_id" value={product.id} />
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full"
-                  disabled={!user}
-                >
-                  {user ? "Mua ngay" : "Đăng nhập để mua"}
-                </Button>
-                {!user && (
-                  <p className="mt-2 text-center text-xs text-gray-500">
-                    <a href="/login" className="text-green-600 underline">Đăng nhập</a> để tiến hành mua hàng
-                  </p>
-                )}
-              </form>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6 space-y-3">
-            <h3 className="font-semibold text-gray-900">Hướng dẫn mua hàng</h3>
-            {[
-              "Đăng nhập hoặc đăng ký tài khoản",
-              'Nhấn "Mua ngay" để tạo đơn hàng',
-              "Chuyển khoản đúng số tiền & nội dung",
-              "Hệ thống tự xác nhận & giao tài khoản",
-              "Kiểm tra email hoặc trang đơn hàng",
-            ].map((step, i) => (
-              <div key={i} className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-700">
-                  {i + 1}
-                </span>
-                <p className="text-sm text-gray-600">{step}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <ProductDetailContent
+      product={p}
+      realStock={realStock ?? 0}
+      reviews={reviewList}
+      avgRating={avgRating}
+      eligibleOrderId={eligibleOrderId}
+      hasReviewed={hasReviewed}
+      createOrderAction={createOrderAction}
+    />
   );
 }
 
 async function createOrderAction(formData: FormData) {
   "use server";
-
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const productId = formData.get("product_id") as string;
-  const { data: product } = await supabase
-    .from("products")
-    .select("*")
-    .eq("id", productId)
-    .single();
+  const quantity  = Math.max(1, Math.min(10, parseInt(formData.get("quantity") as string) || 1));
+  const payMethod = formData.get("pay_method") === "usdt" ? "usdt_direct" : "wallet";
 
-  if (!product || product.stock < 1) redirect("/products");
+  const { createClient: adminClientFn } = await import("@supabase/supabase-js");
+  const sb = adminClientFn(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
 
-  const orderCode = generateOrderCode();
+  const { data: product } = await sb.from("products").select("*").eq("id", productId).single();
+  if (!product) redirect("/products");
 
-  const { data: order, error } = await supabase
-    .from("orders")
-    .insert({
-      user_id: user.id,
-      product_id: productId,
-      quantity: 1,
-      amount: product.price,
-      order_code: orderCode,
-      status: "pending",
-    })
-    .select()
-    .single();
+  const { count: availStock } = await sb
+    .from("wechat_accounts")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", productId)
+    .eq("status", "available");
+  if ((availStock ?? 0) < quantity) redirect("/products");
 
-  if (error || !order) redirect("/products");
+  const totalVnd = product.price * quantity;
+  let usdtAmount: number | null = null;
+  let paymentNote: string | null = null;
 
+  if (payMethod === "usdt_direct") {
+    const { data: rateRow } = await sb.from("settings").select("value").eq("key", "usdt_rate").single();
+    const rate = parseFloat(rateRow?.value ?? "25500") || 25500;
+    const base = Math.ceil((totalVnd / rate) * 100) / 100;
+    const unique = (Date.now() % 1000) / 10000;
+    usdtAmount = Math.round((base + unique) * 10000) / 10000;
+    paymentNote = `usdt:${usdtAmount}`;
+  }
+
+  let order: any = null;
+  let insertError: any = null;
+
+  const fullInsert = await sb.from("orders").insert({
+    user_id: user.id, product_id: productId, quantity, amount: totalVnd,
+    order_code: generateOrderCode(), status: "pending",
+    payment_method: payMethod, usdt_amount: usdtAmount, payment_note: paymentNote,
+  }).select().single();
+
+  if (fullInsert.error?.message?.includes("column")) {
+    const fallback = await sb.from("orders").insert({
+      user_id: user.id, product_id: productId, quantity, amount: totalVnd,
+      order_code: generateOrderCode(), status: "pending", payment_note: paymentNote,
+    }).select().single();
+    order = fallback.data;
+    insertError = fallback.error;
+  } else {
+    order = fullInsert.data;
+    insertError = fullInsert.error;
+  }
+
+  if (insertError || !order) redirect("/products");
   redirect(`/orders/${order.id}/pay`);
 }
