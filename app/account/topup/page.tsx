@@ -31,9 +31,10 @@ function useCountdown(minutes: number) {
   return { m, s, expired: seconds <= 0 };
 }
 
-function PendingPanel({ topup, onConfirmed }: {
+function PendingPanel({ topup, onConfirmed, onCancel }: {
   topup: PendingTopup;
   onConfirmed: (usdt: number) => void;
+  onCancel: () => void;
 }) {
   const [copied, setCopied] = useState<"addr" | "amt" | null>(null);
   const [checking, setChecking] = useState(false);
@@ -149,12 +150,28 @@ function PendingPanel({ topup, onConfirmed }: {
       </div>
 
       {expired && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-center">
-          <p className="text-sm text-amber-700">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+          <p className="text-sm text-amber-700 text-center">
             Auto-confirm window expired.{" "}
             <button onClick={checkPayment} className="font-bold underline">Check again</button>
             {" "}or contact support if you already sent USDT.
           </p>
+          <div className="flex gap-2">
+            <button
+              onClick={checkPayment}
+              disabled={checking}
+              className="flex-1 rounded-xl bg-amber-500 py-2.5 text-sm font-bold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            >
+              {checking ? "Checking..." : "Check again"}
+            </button>
+            <button
+              onClick={() => onConfirmed(-1)}
+              className="flex-1 rounded-xl border border-amber-300 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
+              onClick={onCancel}
+            >
+              Create new request
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -261,7 +278,7 @@ export default function TopupPage() {
           </div>
         </div>
         <div className="mx-auto max-w-lg px-6 py-6">
-          <PendingPanel topup={pending} onConfirmed={handleConfirmed} />
+          <PendingPanel topup={pending} onConfirmed={handleConfirmed} onCancel={() => setPhase("idle")} />
         </div>
       </div>
     );
