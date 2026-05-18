@@ -292,11 +292,15 @@ export default function TopupPage() {
       </div>
 
       {/* History */}
-      {requests.filter(r => r.status !== "pending").length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-3.5">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-400">{T.historyTitle}</p>
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="border-b border-gray-100 px-5 py-3.5">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-400">{T.historyTitle}</p>
+        </div>
+        {requests.filter(r => r.status !== "pending").length === 0 ? (
+          <div className="px-5 py-8 text-center">
+            <p className="text-sm text-gray-400">{T.historyEmpty}</p>
           </div>
+        ) : (
           <div className="divide-y divide-gray-50">
             {requests.filter(r => r.status !== "pending").slice(0, 10).map((r) => (
               <div key={r.id} className="flex items-center justify-between gap-3 px-5 py-4">
@@ -316,8 +320,8 @@ export default function TopupPage() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

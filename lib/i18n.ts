@@ -196,6 +196,7 @@ export const t = {
       checkAgain: "Kiểm tra lại", createNew: "Tạo lệnh mới",
       successAdded: "{amount} USDT đã được thêm vào ví của bạn",
       topupAgain: "Nạp tiếp",
+      historyEmpty: "Chưa có lịch sử nạp tiền.",
     },
     accountPage: {
       title: "Tài khoản của tôi", subtitle: "Quản lý thông tin cá nhân",
@@ -449,6 +450,7 @@ export const t = {
       checkAgain: "Check again", createNew: "Create new request",
       successAdded: "{amount} USDT has been added to your wallet",
       topupAgain: "Topup again",
+      historyEmpty: "No topup history yet.",
     },
     accountPage: {
       title: "My Account", subtitle: "Manage your personal information",
@@ -702,6 +704,7 @@ export const t = {
       checkAgain: "再次检查", createNew: "创建新请求",
       successAdded: "{amount} USDT已添加到您的钱包",
       topupAgain: "再次充值",
+      historyEmpty: "暂无充值记录",
     },
     accountPage: {
       title: "我的账户", subtitle: "管理个人信息",
