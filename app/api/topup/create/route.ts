@@ -44,7 +44,8 @@ export async function POST(req: Request) {
   }).select().single();
 
   if (error || !topup) {
-    return NextResponse.json({ error: "insert_failed" }, { status: 500 });
+    console.error("[topup/create] insert error:", error);
+    return NextResponse.json({ error: "insert_failed", detail: error?.message ?? "unknown" }, { status: 500 });
   }
 
   return NextResponse.json({
