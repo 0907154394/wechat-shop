@@ -37,7 +37,7 @@ function PendingPanel({ topup, onConfirmed }: {
 }) {
   const [copied, setCopied] = useState<"addr" | "amt" | null>(null);
   const [checking, setChecking] = useState(false);
-  const { m, s, expired } = useCountdown(30);
+  const { m, s, expired } = useCountdown(20);
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=M&data=${encodeURIComponent(topup.usdt_address)}`;
 
