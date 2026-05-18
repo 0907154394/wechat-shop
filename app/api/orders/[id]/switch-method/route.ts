@@ -25,11 +25,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { method } = await req.json() as { method: "wallet" | "usdt_direct" };
 
   if (method === "usdt_direct") {
-    const { data: rateRow } = await db.from("settings").select("value").eq("key", "usdt_rate").single();
-    const rate = parseFloat((rateRow as any)?.value ?? "25500") || 25500;
-    const base = Math.ceil((order.amount / rate) * 100) / 100;
+    // order.amount is already in USDT — add unique micro-variation for auto-detection
     const unique = (Date.now() % 1000) / 10000;
-    const usdtAmount = Math.round((base + unique) * 10000) / 10000;
+    const usdtAmount = Math.round((Number(order.amount) + unique) * 10000) / 10000;
     const paymentNote = `usdt:${usdtAmount}`;
 
     await db.from("orders").update({

@@ -152,16 +152,14 @@ async function createOrderAction(formData: FormData) {
     .eq("status", "available");
   if ((availStock ?? 0) < quantity) redirect("/products");
 
-  const totalVnd = product.price * quantity;
+  // product.price is in USDT
+  const totalUsdt = Number(product.price) * quantity;
   let usdtAmount: number | null = null;
   let paymentNote: string | null = null;
 
   if (payMethod === "usdt_direct") {
-    const { data: rateRow } = await sb.from("settings").select("value").eq("key", "usdt_rate").single();
-    const rate = parseFloat(rateRow?.value ?? "25500") || 25500;
-    const base = Math.ceil((totalVnd / rate) * 100) / 100;
     const unique = (Date.now() % 1000) / 10000;
-    usdtAmount = Math.round((base + unique) * 10000) / 10000;
+    usdtAmount = Math.round((totalUsdt + unique) * 10000) / 10000;
     paymentNote = `usdt:${usdtAmount}`;
   }
 
@@ -169,14 +167,14 @@ async function createOrderAction(formData: FormData) {
   let insertError: any = null;
 
   const fullInsert = await sb.from("orders").insert({
-    user_id: user.id, product_id: productId, quantity, amount: totalVnd,
+    user_id: user.id, product_id: productId, quantity, amount: totalUsdt,
     order_code: generateOrderCode(), status: "pending",
     payment_method: payMethod, usdt_amount: usdtAmount, payment_note: paymentNote,
   }).select().single();
 
   if (fullInsert.error?.message?.includes("column")) {
     const fallback = await sb.from("orders").insert({
-      user_id: user.id, product_id: productId, quantity, amount: totalVnd,
+      user_id: user.id, product_id: productId, quantity, amount: totalUsdt,
       order_code: generateOrderCode(), status: "pending", payment_note: paymentNote,
     }).select().single();
     order = fallback.data;

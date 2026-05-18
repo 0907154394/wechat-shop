@@ -58,38 +58,15 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
       <form action={saveSettingsAction} className="space-y-5">
 
         {/* ── 1. Nạp ví USDT ── */}
-        <Section icon={Wallet} color="bg-violet-500" title="Nạp ví USDT" desc="Khách nạp tiền vào ví bằng USDT TRC20 · Binance API tự động xác nhận">
-          <Field label="Địa chỉ ví USDT TRC20 (Binance)" hint="Lấy từ Binance → Ví → Nạp tiền → USDT → TRC20">
+        <Section icon={Wallet} color="bg-violet-500" title="USDT Wallet Topup" desc="Customers deposit via USDT TRC20 · Tronscan auto-confirms">
+          <Field label="USDT TRC20 Address" hint="From your exchange: Deposit → USDT → TRC20 network">
             <input name="usdt_address" defaultValue={settings.usdt_address} placeholder="TXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
               className={`${inputCls} font-mono`} />
           </Field>
-          <Field label="Tỷ giá 1 USDT = ? VND" hint="Cập nhật thường xuyên theo tỷ giá thực tế">
-            <div className="relative">
-              <input name="usdt_rate" type="number" defaultValue={settings.usdt_rate} placeholder="25500" className={`${inputCls} w-full pr-14`} />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">VND</span>
-            </div>
-          </Field>
-          <div className="grid grid-cols-1 gap-4">
-            <Field label="Binance API Key" hint="Lấy từ Binance → API Management → tạo key với quyền Enable Reading">
-              <input name="binance_api_key" defaultValue={settings.binance_api_key} placeholder="Dán API Key vào đây"
-                className={`${inputCls} font-mono`} />
-            </Field>
-            <Field label="Binance API Secret" hint="Chỉ hiện 1 lần khi tạo — lưu ngay">
-              <input name="binance_api_secret" defaultValue={settings.binance_api_secret}
-                placeholder={settings.binance_api_secret ? "••••••••••••••••" : "Dán Secret Key vào đây"}
-                className={`${inputCls} font-mono`} />
-            </Field>
+          <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            Auto-confirmation via Tronscan · TRONSCAN_API_KEY in environment variables
           </div>
-          {settings.binance_api_key ? (
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Binance API đã cấu hình — hệ thống tự xác minh TX Hash
-            </div>
-          ) : (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
-              Chưa có Binance API Key — khách nhập TX Hash sẽ không tự xác minh được
-            </div>
-          )}
         </Section>
 
         {/* ── 3. Chống spam mua hàng ── */}
@@ -142,10 +119,7 @@ async function saveSettingsAction(formData: FormData) {
   const supabase = createAdminClient();
 
   const updates = [
-    { key: "usdt_address",      value: formData.get("usdt_address") as string },
-    { key: "usdt_rate",         value: formData.get("usdt_rate") as string },
-    { key: "binance_api_key",    value: formData.get("binance_api_key") as string },
-    { key: "binance_api_secret", value: formData.get("binance_api_secret") as string },
+    { key: "usdt_address", value: formData.get("usdt_address") as string },
     { key: "wechat_id",    value: formData.get("wechat_id") as string },
     { key: "telegram",     value: (formData.get("telegram") as string).replace("@", "") },
     { key: "zalo",         value: formData.get("zalo") as string },

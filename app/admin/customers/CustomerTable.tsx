@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { ShoppingBag, Ban, CheckCircle, Search, Wallet, Users } from "lucide-react";
 
-function formatVND(n: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
+function formatUSDT(n: number) {
+  const s = (+n).toFixed(4).replace(/\.?0+$/, "");
+  return `${s} USDT`;
 }
+const formatVND = formatUSDT;
 
 export function CustomerTable({
   rows,

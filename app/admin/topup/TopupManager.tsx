@@ -4,10 +4,6 @@ import { useState } from "react";
 import { CheckCircle, XCircle, Clock, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-function formatVND(n: number) {
-  return n.toLocaleString("vi-VN") + "đ";
-}
-
 function StatusBadge({ status }: { status: string }) {
   if (status === "confirmed") return (
     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
@@ -68,8 +64,6 @@ export function TopupManager({ requests: initial }: { requests: any[] }) {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-lg font-black text-gray-900">{r.amount_usdt} USDT</p>
-                      <span className="text-sm text-gray-400">=</span>
-                      <p className="text-base font-bold text-emerald-600">{formatVND(r.amount_vnd)}</p>
                     </div>
                     <p className="text-sm text-gray-600">Khách: <span className="font-semibold">@{r.username}</span></p>
                     <p className="text-xs text-gray-400">{new Date(r.created_at).toLocaleString("vi-VN")}</p>
@@ -120,7 +114,7 @@ export function TopupManager({ requests: initial }: { requests: any[] }) {
               <div key={r.id} className="flex items-center justify-between gap-4 px-5 py-4">
                 <div>
                   <p className="text-sm font-semibold text-gray-800">
-                    @{r.username} · {r.amount_usdt} USDT = {formatVND(r.amount_vnd)}
+                    @{r.username} · {r.amount_usdt} USDT
                   </p>
                   <p className="text-xs text-gray-400">{new Date(r.created_at).toLocaleString("vi-VN")}</p>
                   {r.note && <p className="text-xs text-gray-400 italic">{r.note}</p>}

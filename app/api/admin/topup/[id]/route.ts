@@ -35,19 +35,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       note: note ?? null,
     }).eq("id", id);
 
-    // Credit user balance
+    // Credit user balance in USDT
     const { data: existing } = await db.from("user_credits").select("balance").eq("user_id", topup.user_id).single();
     await db.from("user_credits").upsert({
       user_id: topup.user_id,
-      balance: (existing?.balance ?? 0) + topup.amount_vnd,
+      balance: Number(existing?.balance ?? 0) + Number(topup.amount_usdt),
       updated_at: new Date().toISOString(),
     });
 
     await db.from("notifications").insert({
       user_id: topup.user_id,
       type: "topup",
-      title: "Nạp tiền thành công!",
-      message: `Tài khoản được cộng ${Number(topup.amount_vnd).toLocaleString("vi-VN")}đ (${topup.amount_usdt} USDT).`,
+      title: "Topup successful!",
+      message: `${topup.amount_usdt} USDT has been added to your wallet.`,
       order_id: null,
     });
 

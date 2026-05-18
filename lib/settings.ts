@@ -18,9 +18,6 @@ export interface ShopSettings {
   wechat_id: string;
   telegram: string;
   usdt_address: string;
-  usdt_rate: string;
-  binance_api_key: string;
-  binance_api_secret: string;
   max_pending_orders: string;
   max_quantity_per_order: string;
   max_orders_per_day: string;
@@ -36,9 +33,6 @@ const DEFAULTS: ShopSettings = {
   wechat_id: "",
   telegram: "",
   usdt_address: "",
-  usdt_rate: "25500",
-  binance_api_key: "",
-  binance_api_secret: "",
   max_pending_orders: "3",
   max_quantity_per_order: "10",
   max_orders_per_day: "20",

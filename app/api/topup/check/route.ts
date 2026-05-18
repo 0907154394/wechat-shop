@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
   if (!topup) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (topup.status === "confirmed") {
-    return NextResponse.json({ confirmed: true, amount_usdt: topup.amount_usdt, amount_vnd: topup.amount_vnd });
+    return NextResponse.json({ confirmed: true, amount_usdt: topup.amount_usdt });
   }
   if (topup.status !== "pending") return NextResponse.json({ confirmed: false });
 
@@ -68,12 +68,12 @@ export async function POST(req: Request) {
 
   if (!txHash) return NextResponse.json({ confirmed: false });
 
-  // Credit user wallet
+  // Credit user wallet in USDT
   const { data: existingCredits } = await db
     .from("user_credits").select("balance").eq("user_id", user.id).single();
   await db.from("user_credits").upsert({
     user_id: user.id,
-    balance: (existingCredits?.balance ?? 0) + topup.amount_vnd,
+    balance: Number(existingCredits?.balance ?? 0) + Number(topup.amount_usdt),
     updated_at: new Date().toISOString(),
   });
 
@@ -88,20 +88,19 @@ export async function POST(req: Request) {
   await db.from("notifications").insert({
     user_id: user.id,
     type: "topup",
-    title: "Nạp tiền thành công!",
-    message: `Tài khoản được cộng ${topup.amount_vnd.toLocaleString("vi-VN")}đ (${topup.amount_usdt} USDT).`,
+    title: "Topup successful!",
+    message: `${topup.amount_usdt} USDT has been added to your wallet.`,
     order_id: null,
   });
 
   // Notify admin via Telegram
   const username = user.user_metadata?.username ?? user.email;
   await notifyAdmin(
-    `💎 <b>Nạp USDT thành công (tự động)</b>\nUser: <code>${username}</code>\nSố USDT: ${topup.amount_usdt}\nSố VND: ${topup.amount_vnd.toLocaleString("vi-VN")}đ\nTX: <code>${txHash}</code>`
+    `💎 <b>USDT Topup (auto-confirmed)</b>\nUser: <code>${username}</code>\nAmount: ${topup.amount_usdt} USDT\nTX: <code>${txHash}</code>`
   );
 
   return NextResponse.json({
     confirmed: true,
     amount_usdt: topup.amount_usdt,
-    amount_vnd: topup.amount_vnd,
   });
 }

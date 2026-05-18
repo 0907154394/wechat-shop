@@ -5,12 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatVND(amount: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
+export function formatUSDT(amount: number) {
+  const n = +amount;
+  const s = n.toFixed(4).replace(/\.?0+$/, "");
+  return `${s} USDT`;
 }
+
+// Backward-compat alias — all existing formatVND calls now display USDT
+export const formatVND = formatUSDT;
 
 export function generateOrderCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

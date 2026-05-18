@@ -16,23 +16,21 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { amount_vnd } = await req.json();
-  if (!amount_vnd || amount_vnd < 50000) {
+  const { amount_usdt } = await req.json();
+  const usdt = parseFloat(amount_usdt);
+  if (!usdt || usdt < 1) {
     return NextResponse.json({ error: "min_amount" }, { status: 400 });
   }
 
   const settings = await getSettings();
-  const rate = parseFloat(settings.usdt_rate) || 25500;
   const usdtAddress = settings.usdt_address;
   if (!usdtAddress) {
     return NextResponse.json({ error: "no_address" }, { status: 500 });
   }
 
-  // Generate unique USDT amount with small decimal variation to identify this request
-  const base = Math.ceil((amount_vnd / rate) * 100) / 100;
+  // Add unique micro-variation for Tronscan auto-detection
   const unique = (Date.now() % 1000) / 10000;
-  const expected_usdt = Math.round((base + unique) * 10000) / 10000;
-  const actual_vnd = Math.round(expected_usdt * rate);
+  const expected_usdt = Math.round((usdt + unique) * 10000) / 10000;
 
   const db = adminDb();
   const id = crypto.randomUUID();
@@ -42,7 +40,6 @@ export async function POST(req: Request) {
     user_id: user.id,
     username: user.user_metadata?.username ?? user.email,
     amount_usdt: expected_usdt,
-    amount_vnd: actual_vnd,
     status: "pending",
   });
 
@@ -51,10 +48,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "insert_failed", detail: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({
-    id,
-    expected_usdt,
-    amount_vnd: actual_vnd,
-    usdt_address: usdtAddress,
-  });
+  return NextResponse.json({ id, expected_usdt, usdt_address: usdtAddress });
 }

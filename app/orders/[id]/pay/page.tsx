@@ -35,21 +35,19 @@ export default async function PayOrderPage({ params }: { params: Promise<{ id: s
   const usdtAmount: number = order.usdt_amount
     ?? (payNote.startsWith("usdt:") ? parseFloat(payNote.replace("usdt:", "")) || 0 : 0);
 
-  const [creditsResult, addrResult, rateResult] = await Promise.all([
+  const [creditsResult, addrResult] = await Promise.all([
     db.from("user_credits").select("balance").eq("user_id", user.id).single(),
     db.from("settings").select("value").eq("key", "usdt_address").single(),
-    db.from("settings").select("value").eq("key", "usdt_rate").single(),
   ]);
 
   const balance = Number((creditsResult.data as any)?.balance ?? 0);
   const usdtAddress = (addrResult.data as any)?.value ?? "";
 
+  // order.amount is already USDT — add unique micro-variation if not yet set
   let resolvedUsdtAmount = usdtAmount;
-  if (!isUsdt) {
-    const rate = parseFloat((rateResult.data as any)?.value ?? "25500") || 25500;
-    const base = Math.ceil((order.amount / rate) * 100) / 100;
+  if (!isUsdt || resolvedUsdtAmount === 0) {
     const unique = (Date.now() % 1000) / 10000;
-    resolvedUsdtAmount = Math.round((base + unique) * 10000) / 10000;
+    resolvedUsdtAmount = Math.round((Number(order.amount) + unique) * 10000) / 10000;
   }
 
   return (
