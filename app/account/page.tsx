@@ -135,12 +135,17 @@ export default function AccountPage() {
       </div>
 
       {/* ── Recent topups ── */}
-      {recentTopups.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-3.5">
-            <p className="text-sm font-semibold text-gray-700">{T.topupHistoryTitle}</p>
-            <Link href="/account/topup" className="text-xs font-semibold text-emerald-600 hover:underline">{T.viewAll}</Link>
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-3.5">
+          <p className="text-sm font-semibold text-gray-700">{T.topupHistoryTitle}</p>
+          <Link href="/account/topup" className="text-xs font-semibold text-emerald-600 hover:underline">{T.newTopup}</Link>
+        </div>
+        {recentTopups.length === 0 ? (
+          <div className="px-5 py-8 text-center">
+            <p className="text-sm text-gray-400">{T.topupHistoryEmpty}</p>
+            <Link href="/account/topup" className="mt-2 inline-block text-sm font-semibold text-emerald-600 hover:underline">{T.topupNow}</Link>
           </div>
+        ) : (
           <div className="divide-y divide-gray-50">
             {recentTopups.map((r) => (
               <div key={r.id} className="flex items-center justify-between gap-3 px-5 py-4">
@@ -160,8 +165,8 @@ export default function AccountPage() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── Profile edit ── */}
       <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
