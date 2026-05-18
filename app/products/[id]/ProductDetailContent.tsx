@@ -28,10 +28,14 @@ interface Props {
   eligibleOrderId: string | null;
   hasReviewed: boolean;
   createOrderAction: (formData: FormData) => Promise<void>;
+  maxQtyPerOrder: number;
+  orderError: string | null;
+  orderErrorLimit: number | null;
 }
 
 export function ProductDetailContent({
   product, realStock, reviews, avgRating, eligibleOrderId, hasReviewed, createOrderAction,
+  maxQtyPerOrder, orderError, orderErrorLimit,
 }: Props) {
   const { lang } = useLang();
   const T = tr(lang).productsPage;
@@ -107,6 +111,9 @@ export function ProductDetailContent({
                 stock={realStock}
                 isLoggedIn={true}
                 createOrderAction={createOrderAction}
+                maxQtyPerOrder={maxQtyPerOrder}
+                orderError={orderError}
+                orderErrorLimit={orderErrorLimit}
               />
             </div>
           </div>

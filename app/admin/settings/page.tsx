@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { getSettings } from "@/lib/settings";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
-import { Headphones, Wallet, CheckCircle } from "lucide-react";
+import { Headphones, Wallet, CheckCircle, ShieldAlert } from "lucide-react";
 
 function Section({ icon: Icon, color, title, desc, children }: {
   icon: React.ElementType; color: string; title: string; desc: string; children: React.ReactNode;
@@ -92,7 +92,25 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
           )}
         </Section>
 
-        {/* ── 3. Liên hệ hỗ trợ ── */}
+        {/* ── 3. Chống spam mua hàng ── */}
+        <Section icon={ShieldAlert} color="bg-red-500" title="Chống spam mua hàng" desc="Giới hạn số lượng đặt hàng để tránh lạm dụng">
+          <div className="grid grid-cols-3 gap-4">
+            <Field label="Đơn pending tối đa" hint="Số đơn chưa thanh toán cùng lúc">
+              <input name="max_pending_orders" type="number" min="1" defaultValue={settings.max_pending_orders} placeholder="3" className={inputCls} />
+            </Field>
+            <Field label="SL tối đa mỗi đơn" hint="Số tài khoản tối đa trong 1 đơn hàng">
+              <input name="max_quantity_per_order" type="number" min="1" defaultValue={settings.max_quantity_per_order} placeholder="10" className={inputCls} />
+            </Field>
+            <Field label="Đơn tối đa mỗi ngày" hint="Giới hạn tổng số đơn đặt trong 1 ngày">
+              <input name="max_orders_per_day" type="number" min="1" defaultValue={settings.max_orders_per_day} placeholder="20" className={inputCls} />
+            </Field>
+          </div>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+            💡 Đặt giá trị cao (999) để gần như tắt giới hạn.
+          </div>
+        </Section>
+
+        {/* ── 4. Liên hệ hỗ trợ ── */}
         <Section icon={Headphones} color="bg-blue-500" title="Liên hệ hỗ trợ" desc="Hiển thị trong FloatSupport và Footer cho khách hàng">
           <div className="grid grid-cols-2 gap-4">
             <Field label="WeChat ID (客服微信号)" hint="Khách Trung tìm kiếm WeChat này để chat">
@@ -132,6 +150,9 @@ async function saveSettingsAction(formData: FormData) {
     { key: "telegram",     value: (formData.get("telegram") as string).replace("@", "") },
     { key: "zalo",         value: formData.get("zalo") as string },
     { key: "facebook_page", value: formData.get("facebook_page") as string },
+    { key: "max_pending_orders",        value: formData.get("max_pending_orders") as string || "3" },
+    { key: "max_quantity_per_order",     value: formData.get("max_quantity_per_order") as string || "10" },
+    { key: "max_orders_per_day",         value: formData.get("max_orders_per_day") as string || "20" },
   ];
 
   for (const { key, value } of updates) {

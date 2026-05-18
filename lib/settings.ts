@@ -21,6 +21,9 @@ export interface ShopSettings {
   usdt_rate: string;
   binance_api_key: string;
   binance_api_secret: string;
+  max_pending_orders: string;
+  max_quantity_per_order: string;
+  max_orders_per_day: string;
 }
 
 const DEFAULTS: ShopSettings = {
@@ -36,6 +39,9 @@ const DEFAULTS: ShopSettings = {
   usdt_rate: "25500",
   binance_api_key: "",
   binance_api_secret: "",
+  max_pending_orders: "3",
+  max_quantity_per_order: "10",
+  max_orders_per_day: "20",
 };
 
 export async function getSettings(): Promise<ShopSettings> {

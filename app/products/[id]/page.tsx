@@ -14,8 +14,9 @@ function getAdmin() {
   );
 }
 
-export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProductDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; limit?: string }> }) {
   const { id } = await params;
+  const sp = await searchParams;
   const supabase = await createClient();
   const sb = getAdmin();
 
@@ -27,6 +28,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (!product) notFound();
 
   const p = product as Product;
+
+  // Load rate limit settings
+  const { data: settingsRows } = await sb.from("settings").select("key, value").in("key", [
+    "max_quantity_per_order"
+  ]);
+  const cfgMap = Object.fromEntries((settingsRows ?? []).map(r => [r.key, r.value]));
+  const maxQtyPerOrder = parseInt(cfgMap.max_quantity_per_order ?? "10") || 10;
 
   const { count: realStock } = await sb
     .from("wechat_accounts")
@@ -69,6 +77,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       eligibleOrderId={eligibleOrderId}
       hasReviewed={hasReviewed}
       createOrderAction={createOrderAction}
+      maxQtyPerOrder={maxQtyPerOrder}
+      orderError={sp.error ?? null}
+      orderErrorLimit={sp.limit ? parseInt(sp.limit) : null}
     />
   );
 }
@@ -80,7 +91,6 @@ async function createOrderAction(formData: FormData) {
   if (!user) redirect("/login");
 
   const productId = formData.get("product_id") as string;
-  const quantity  = Math.max(1, Math.min(10, parseInt(formData.get("quantity") as string) || 1));
   const payMethod = formData.get("pay_method") === "usdt" ? "usdt_direct" : "wallet";
 
   const { createClient: adminClientFn } = await import("@supabase/supabase-js");
@@ -90,6 +100,48 @@ async function createOrderAction(formData: FormData) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
+  // ── Load rate limit settings ──
+  const { data: settingsRows } = await sb.from("settings").select("key, value").in("key", [
+    "max_pending_orders", "max_quantity_per_order", "max_orders_per_day"
+  ]);
+  const cfg = Object.fromEntries((settingsRows ?? []).map(r => [r.key, r.value]));
+  const maxPending        = parseInt(cfg.max_pending_orders ?? "3") || 3;
+  const maxQtyPerOrder    = parseInt(cfg.max_quantity_per_order ?? "10") || 10;
+  const maxOrdersPerDay   = parseInt(cfg.max_orders_per_day ?? "20") || 20;
+
+  const quantity = Math.max(1, Math.min(maxQtyPerOrder, parseInt(formData.get("quantity") as string) || 1));
+
+  // ── Rate limit 1: Max quantity per order ──
+  const requestedQty = parseInt(formData.get("quantity") as string) || 1;
+  if (requestedQty > maxQtyPerOrder) {
+    redirect(`/products/${productId}?error=max_quantity&limit=${maxQtyPerOrder}`);
+  }
+
+  // ── Rate limit 2: Max pending orders ──
+  const { count: pendingCount } = await sb
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("status", "pending");
+
+  if ((pendingCount ?? 0) >= maxPending) {
+    redirect(`/products/${productId}?error=max_pending&limit=${maxPending}`);
+  }
+
+  // ── Rate limit 3: Max orders per day ──
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const { count: todayCount } = await sb
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
+  if ((todayCount ?? 0) >= maxOrdersPerDay) {
+    redirect(`/products/${productId}?error=max_daily&limit=${maxOrdersPerDay}`);
+  }
+
+  // ── Stock check ──
   const { data: product } = await sb.from("products").select("*").eq("id", productId).single();
   if (!product) redirect("/products");
 

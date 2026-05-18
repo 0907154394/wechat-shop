@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Minus, Plus, Wallet, Zap, Bitcoin } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Minus, Plus, Wallet, Zap, Bitcoin, AlertTriangle, ShieldAlert } from "lucide-react";
 import { formatVND } from "@/lib/utils";
 
 interface Props {
@@ -10,18 +10,89 @@ interface Props {
   stock: number;
   isLoggedIn: boolean;
   createOrderAction: (formData: FormData) => Promise<void>;
+  maxQtyPerOrder: number;
+  orderError: string | null;
+  orderErrorLimit: number | null;
 }
 
-export function BuyBox({ productId, price, stock, isLoggedIn, createOrderAction }: Props) {
+function ErrorBanner({ icon: Icon, color, title, message }: {
+  icon: React.ElementType; color: string; title: string; message: string;
+}) {
+  return (
+    <div className={`mb-4 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm animate-shake ${color}`}>
+      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+      <div>
+        <p className="font-bold">{title}</p>
+        <p className="mt-0.5 text-xs opacity-80">{message}</p>
+      </div>
+    </div>
+  );
+}
+
+
+export function BuyBox({
+  productId, price, stock, isLoggedIn, createOrderAction,
+  maxQtyPerOrder, orderError, orderErrorLimit,
+}: Props) {
   const [qty, setQty] = useState(1);
   const [payMethod, setPayMethod] = useState<"wallet" | "usdt">("wallet");
-  const maxQty = Math.min(stock, 10);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const maxQty = Math.min(stock, maxQtyPerOrder);
+
+  // Clear URL params after displaying error (don't keep them on refresh)
+  useEffect(() => {
+    if (orderError && typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("error")) {
+        url.searchParams.delete("error");
+        url.searchParams.delete("limit");
+        window.history.replaceState({}, "", url.pathname);
+      }
+    }
+  }, [orderError]);
+
+  const handleSubmit = useCallback(async (formData: FormData) => {
+    setIsSubmitting(true);
+    try {
+      await createOrderAction(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [createOrderAction]);
 
   return (
-    <form action={createOrderAction}>
+    <form action={handleSubmit}>
       <input type="hidden" name="product_id" value={productId} />
       <input type="hidden" name="quantity" value={qty} />
       <input type="hidden" name="pay_method" value={payMethod} />
+
+      {/* Error messages */}
+      {orderError === "max_pending" && (
+        <ErrorBanner
+          icon={ShieldAlert}
+          color="border-red-200 bg-red-50 text-red-700"
+          title={`Bạn đang có ${orderErrorLimit} đơn chưa thanh toán`}
+          message="Vui lòng thanh toán hoặc hủy đơn cũ trước khi đặt thêm. Vào mục Đơn hàng để xử lý."
+        />
+      )}
+
+      {orderError === "max_daily" && (
+        <ErrorBanner
+          icon={AlertTriangle}
+          color="border-orange-200 bg-orange-50 text-orange-700"
+          title="Đã đạt giới hạn đơn hàng trong ngày"
+          message={`Bạn chỉ được đặt tối đa ${orderErrorLimit} đơn/ngày. Quay lại vào ngày mai nhé!`}
+        />
+      )}
+
+      {orderError === "max_quantity" && (
+        <ErrorBanner
+          icon={AlertTriangle}
+          color="border-violet-200 bg-violet-50 text-violet-700"
+          title="Số lượng vượt giới hạn"
+          message={`Mỗi đơn hàng chỉ được mua tối đa ${orderErrorLimit} tài khoản.`}
+        />
+      )}
 
       {/* Quantity */}
       <div className="mb-5">
@@ -88,11 +159,20 @@ export function BuyBox({ productId, price, stock, isLoggedIn, createOrderAction 
       {stock > 0 ? (
         <button
           type="submit"
-          disabled={!isLoggedIn}
+          disabled={!isLoggedIn || isSubmitting}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3.5 text-sm font-bold text-white transition hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <Zap className="h-4 w-4" />
-          {isLoggedIn ? "Đặt hàng ngay" : "Đăng nhập để mua"}
+          {isSubmitting ? (
+            <>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              Đang xử lý...
+            </>
+          ) : (
+            <>
+              <Zap className="h-4 w-4" />
+              {isLoggedIn ? "Đặt hàng ngay" : "Đăng nhập để mua"}
+            </>
+          )}
         </button>
       ) : (
         <button disabled className="w-full rounded-xl bg-gray-200 py-3.5 text-sm font-bold text-gray-400 cursor-not-allowed">

@@ -6,13 +6,13 @@ import type { Lang } from "./i18n";
 const LANG_KEY = "lang";
 const LANGS: Lang[] = ["VI", "EN", "ZH"];
 
-let _lang: Lang = "VI";
+let _lang: Lang = "EN";
 const _subs = new Set<(lang: Lang) => void>();
 
 function _init(): Lang {
-  if (typeof window === "undefined") return "VI";
+  if (typeof window === "undefined") return "EN";
   const v = localStorage.getItem(LANG_KEY) as Lang | null;
-  return LANGS.includes(v as Lang) ? (v as Lang) : "VI";
+  return LANGS.includes(v as Lang) ? (v as Lang) : "EN";
 }
 
 function _set(next: Lang) {
@@ -22,7 +22,7 @@ function _set(next: Lang) {
 }
 
 export function useLang(): { lang: Lang; toggleLang: () => void; setLang: (l: Lang) => void } {
-  const [lang, setLang] = useState<Lang>("VI");
+  const [lang, setLang] = useState<Lang>("EN");
 
   useEffect(() => {
     const stored = _init();
