@@ -204,7 +204,10 @@ export default function TopupPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error === "no_address" ? "Admin chưa cài địa chỉ ví USDT." : "Không thể tạo lệnh. Vui lòng thử lại.");
+        const msg = data.error === "no_address"
+          ? "Admin chưa cài địa chỉ ví USDT."
+          : `Lỗi: ${data.error ?? "unknown"}${data.detail ? ` — ${data.detail}` : ""}`;
+        setError(msg);
         setCreating(false);
         return;
       }
