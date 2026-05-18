@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { User, ShoppingBag, KeyRound, LogOut, ChevronRight, Shield, Wallet } from "lucide-react";
+import { User, ShoppingBag, KeyRound, LogOut, ChevronRight, Shield, Wallet, CheckCircle, Clock, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/LanguageContext";
@@ -20,6 +20,8 @@ export default function AccountPage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [supabase, setSupabase] = useState<any>(null);
+  const [balance, setBalance] = useState<number>(0);
+  const [topupHistory, setTopupHistory] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadUser() {
@@ -33,7 +35,16 @@ export default function AccountPage() {
         setUsername(user.user_metadata?.username ?? "");
       }
     }
+    async function loadWallet() {
+      const res = await fetch("/api/topup");
+      if (res.ok) {
+        const d = await res.json();
+        setBalance(d.balance ?? 0);
+        setTopupHistory((d.requests ?? []).filter((r: any) => r.status !== "pending").slice(0, 5));
+      }
+    }
     loadUser();
+    loadWallet();
   }, []);
 
   async function handleSave(e: React.SyntheticEvent) {
@@ -97,6 +108,19 @@ export default function AccountPage() {
             </div>
           </div>
 
+          {/* Balance card */}
+          <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 p-5 shadow-md">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-200/70">USDT Balance</p>
+                <p className="mt-1 text-3xl font-black text-white">{balance} <span className="text-lg font-semibold text-emerald-200/80">USDT</span></p>
+              </div>
+              <Link href="/account/topup" className="rounded-xl bg-white/20 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/30">
+                + Topup
+              </Link>
+            </div>
+          </div>
+
           {/* Quick links */}
           <div className="grid grid-cols-2 gap-3">
             {quickLinks.map(({ href, icon: Icon, label, sub, from, to, shadow }) => (
@@ -113,6 +137,43 @@ export default function AccountPage() {
                 </div>
               </Link>
             ))}
+          </div>
+
+          {/* Topup history */}
+          <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Topup History</p>
+              <Link href="/account/topup" className="text-xs font-semibold text-emerald-600 hover:underline">View all</Link>
+            </div>
+            {topupHistory.length === 0 ? (
+              <p className="px-5 py-6 text-center text-sm text-gray-400">No topup history yet.</p>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {topupHistory.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-800">+{r.amount_usdt ?? "?"} USDT</p>
+                      <p className="text-xs text-gray-400">{new Date(r.created_at).toLocaleString()}</p>
+                    </div>
+                    {r.status === "confirmed" && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                        <CheckCircle className="h-3 w-3" /> Confirmed
+                      </span>
+                    )}
+                    {r.status === "rejected" && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-600">
+                        <XCircle className="h-3 w-3" /> Rejected
+                      </span>
+                    )}
+                    {r.status !== "confirmed" && r.status !== "rejected" && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
+                        <Clock className="h-3 w-3" /> Pending
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Edit form */}
