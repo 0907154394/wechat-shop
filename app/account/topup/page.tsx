@@ -165,9 +165,8 @@ function PendingPanel({ topup, onConfirmed, onCancel }: {
               {checking ? "Checking..." : "Check again"}
             </button>
             <button
-              onClick={() => onConfirmed(-1)}
-              className="flex-1 rounded-xl border border-amber-300 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
               onClick={onCancel}
+              className="flex-1 rounded-xl border border-amber-300 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
             >
               Create new request
             </button>
