@@ -35,21 +35,24 @@ export async function POST(req: Request) {
   const actual_vnd = Math.round(expected_usdt * rate);
 
   const db = adminDb();
-  const { data: topup, error } = await db.from("topup_requests").insert({
+  const id = crypto.randomUUID();
+
+  const { error } = await db.from("topup_requests").insert({
+    id,
     user_id: user.id,
     username: user.user_metadata?.username ?? user.email,
     amount_usdt: expected_usdt,
     amount_vnd: actual_vnd,
     status: "pending",
-  }).select().single();
+  });
 
-  if (error || !topup) {
+  if (error) {
     console.error("[topup/create] insert error:", error);
-    return NextResponse.json({ error: "insert_failed", detail: error?.message ?? "unknown" }, { status: 500 });
+    return NextResponse.json({ error: "insert_failed", detail: error.message }, { status: 500 });
   }
 
   return NextResponse.json({
-    id: topup.id,
+    id,
     expected_usdt,
     amount_vnd: actual_vnd,
     usdt_address: usdtAddress,
