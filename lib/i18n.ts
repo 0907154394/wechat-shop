@@ -200,6 +200,9 @@ export const t = {
       fullNameLabel: "Họ và tên",
       saveBtn: "Lưu thay đổi", saveSuccess: "Đã lưu thông tin thành công.",
       signOut: "Đăng xuất",
+      statOrders: "Đơn hàng", statTotalTopup: "Tổng nạp",
+      recentOrdersTitle: "Đơn hàng gần đây", recentOrdersEmpty: "Chưa có đơn hàng nào.",
+      shopNow: "Mua ngay →", viewAll: "Xem tất cả →",
     },
     passwordPage: {
       back: "Tài khoản",
@@ -435,6 +438,9 @@ export const t = {
       fullNameLabel: "Full Name",
       saveBtn: "Save Changes", saveSuccess: "Information saved successfully.",
       signOut: "Sign Out",
+      statOrders: "Orders", statTotalTopup: "Total Topup",
+      recentOrdersTitle: "Recent Orders", recentOrdersEmpty: "No orders yet.",
+      shopNow: "Shop now →", viewAll: "View all →",
     },
     passwordPage: {
       back: "Account",
@@ -670,6 +676,9 @@ export const t = {
       fullNameLabel: "全名",
       saveBtn: "保存更改", saveSuccess: "信息保存成功。",
       signOut: "退出登录",
+      statOrders: "订单", statTotalTopup: "总充值",
+      recentOrdersTitle: "最近订单", recentOrdersEmpty: "暂无订单",
+      shopNow: "立即购买 →", viewAll: "查看全部 →",
     },
     passwordPage: {
       back: "账户",
