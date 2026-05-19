@@ -111,17 +111,17 @@ export function ProductThumbnail({ name, imageUrl, className = "", compact = fal
       {/* Bottom text — hidden in compact mode */}
       {!compact && (
         <div
-          className="relative z-10 px-3 py-2.5"
-          style={{ background: "rgba(0,0,0,0.35)", borderTop: `1px solid ${GLOW}30` }}
+          className="relative z-10 px-4 py-3"
+          style={{ background: "rgba(0,0,0,0.50)", borderTop: `1px solid ${GLOW}40` }}
         >
           <p
             className="truncate font-black leading-none tracking-wide text-white"
-            style={{ fontSize: 13 }}
+            style={{ fontSize: 16 }}
           >
             WeChat{duration ? ` ${duration}` : ""}
           </p>
           <p
-            className="mt-1 text-[9px] font-semibold uppercase tracking-[0.18em]"
+            className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.18em]"
             style={{ color: GLOW }}
           >
             {SUBTITLE[lang] ?? SUBTITLE.VI}
