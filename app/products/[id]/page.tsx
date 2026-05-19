@@ -25,6 +25,11 @@ export default async function ProductDetailPage({ params, searchParams }: { para
     supabase.auth.getUser(),
   ]);
 
+  const balance: number = user
+    ? await sb.from("user_credits").select("balance").eq("user_id", user.id).single()
+        .then(r => Number(r.data?.balance ?? 0))
+    : 0;
+
   if (!product) notFound();
 
   const p = product as Product;
@@ -80,6 +85,7 @@ export default async function ProductDetailPage({ params, searchParams }: { para
       maxQtyPerOrder={maxQtyPerOrder}
       orderError={sp.error ?? null}
       orderErrorLimit={sp.limit ? parseInt(sp.limit) : null}
+      balance={balance}
     />
   );
 }

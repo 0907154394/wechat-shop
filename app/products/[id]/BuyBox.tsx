@@ -13,6 +13,7 @@ interface Props {
   maxQtyPerOrder: number;
   orderError: string | null;
   orderErrorLimit: number | null;
+  balance: number;
 }
 
 function ErrorBanner({ icon: Icon, color, title, message }: {
@@ -32,7 +33,7 @@ function ErrorBanner({ icon: Icon, color, title, message }: {
 
 export function BuyBox({
   productId, price, stock, isLoggedIn, createOrderAction,
-  maxQtyPerOrder, orderError, orderErrorLimit,
+  maxQtyPerOrder, orderError, orderErrorLimit, balance,
 }: Props) {
   const [qty, setQty] = useState(1);
   const [payMethod, setPayMethod] = useState<"wallet" | "usdt">("wallet");
@@ -127,7 +128,7 @@ export function BuyBox({
             <Wallet className={`h-4 w-4 shrink-0 ${payMethod === "wallet" ? "text-emerald-600" : "text-gray-400"}`} />
             <div className="text-left">
               <p className={`text-sm font-semibold leading-none ${payMethod === "wallet" ? "text-emerald-700" : "text-gray-600"}`}>Số dư ví</p>
-              <p className="mt-0.5 text-[10px] text-gray-400">Nạp rồi thanh toán</p>
+              <p className={`mt-0.5 text-[10px] font-semibold ${balance >= price ? "text-emerald-500" : "text-red-400"}`}>{balance} USDT</p>
             </div>
           </button>
 

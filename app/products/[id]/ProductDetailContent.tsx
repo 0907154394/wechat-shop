@@ -31,11 +31,12 @@ interface Props {
   maxQtyPerOrder: number;
   orderError: string | null;
   orderErrorLimit: number | null;
+  balance: number;
 }
 
 export function ProductDetailContent({
   product, realStock, reviews, avgRating, eligibleOrderId, hasReviewed, createOrderAction,
-  maxQtyPerOrder, orderError, orderErrorLimit,
+  maxQtyPerOrder, orderError, orderErrorLimit, balance,
 }: Props) {
   const { lang } = useLang();
   const T = tr(lang).productsPage;
@@ -114,6 +115,7 @@ export function ProductDetailContent({
                 maxQtyPerOrder={maxQtyPerOrder}
                 orderError={orderError}
                 orderErrorLimit={orderErrorLimit}
+                balance={balance}
               />
             </div>
           </div>
