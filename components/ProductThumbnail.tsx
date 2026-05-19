@@ -1,7 +1,5 @@
 "use client";
 
-import { useLang } from "@/lib/LanguageContext";
-
 const BG   = "linear-gradient(145deg,#051c10 0%,#0a3520 100%)";
 const GLOW = "#07c160";
 
@@ -28,14 +26,7 @@ interface ProductThumbnailProps {
   compact?: boolean;
 }
 
-const SUBTITLE: Record<string, string> = {
-  VI: "Tài khoản WeChat",
-  EN: "WeChat Account",
-  ZH: "微信账号",
-};
-
 export function ProductThumbnail({ name, imageUrl, className = "", compact = false }: ProductThumbnailProps) {
-  const { lang } = useLang();
   if (imageUrl) {
     return (
       <div className={`relative overflow-hidden ${className}`}>
@@ -111,20 +102,14 @@ export function ProductThumbnail({ name, imageUrl, className = "", compact = fal
       {/* Bottom text — hidden in compact mode */}
       {!compact && (
         <div
-          className="relative z-10 px-4 py-3"
-          style={{ background: "rgba(0,0,0,0.50)", borderTop: `1px solid ${GLOW}40` }}
+          className="relative z-10 px-4 py-4 text-center"
+          style={{ background: "rgba(0,0,0,0.55)", borderTop: `1px solid ${GLOW}40` }}
         >
           <p
-            className="truncate font-black leading-none tracking-wide text-white"
-            style={{ fontSize: 16 }}
+            className="truncate font-black leading-none tracking-widest text-white uppercase"
+            style={{ fontSize: 18, letterSpacing: "0.12em" }}
           >
-            WeChat{duration ? ` ${duration}` : ""}
-          </p>
-          <p
-            className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.18em]"
-            style={{ color: GLOW }}
-          >
-            {SUBTITLE[lang] ?? SUBTITLE.VI}
+            WeChat{duration ? ` · ${duration}` : ""}
           </p>
         </div>
       )}

@@ -61,13 +61,13 @@ export function ProductDetailContent({
 
       <div className="mx-auto max-w-5xl px-4 py-6 space-y-4">
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-          <div className="grid gap-0 md:grid-cols-5">
+          <div className="grid gap-0 md:grid-cols-5 md:items-stretch">
             {/* Image */}
-            <div className="overflow-hidden border-b border-gray-100 md:border-b-0 md:border-r md:col-span-2">
+            <div className="overflow-hidden border-b border-gray-100 md:border-b-0 md:border-r md:col-span-2 md:self-stretch">
               <ProductThumbnail
                 name={product.name}
                 imageUrl={product.image_url}
-                className="h-64 w-full md:h-full md:min-h-[320px]"
+                className="h-64 w-full md:h-full md:min-h-full"
               />
             </div>
 
