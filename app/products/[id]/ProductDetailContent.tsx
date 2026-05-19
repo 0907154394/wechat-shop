@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useLang } from "@/lib/LanguageContext";
 import { tr } from "@/lib/i18n";
 import { formatVND } from "@/lib/utils";
-import { MessageCircle, CheckCircle, Zap, ShieldCheck, Clock, ChevronLeft, Star, ChevronDown, Package } from "lucide-react";
+import { CheckCircle, Zap, ShieldCheck, Clock, ChevronLeft, Star, ChevronDown, Package } from "lucide-react";
 import { BuyBox } from "./BuyBox";
 import { ReviewSection } from "./ReviewSection";
+import { ProductThumbnail } from "@/components/ProductThumbnail";
 import type { Product } from "@/lib/types";
 
 const FEATURE_ICONS = [CheckCircle, ShieldCheck, Zap, Clock];
@@ -62,17 +63,12 @@ export function ProductDetailContent({
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
           <div className="grid gap-0 md:grid-cols-5">
             {/* Image */}
-            <div className="flex items-center justify-center border-b border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 p-8 md:border-b-0 md:border-r md:col-span-2">
-              {product.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={product.image_url} alt={product.name}
-                  className="h-56 w-full rounded-xl object-cover shadow-sm md:h-72" />
-              ) : (
-                <div className="flex h-56 w-56 flex-col items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-400 shadow-lg md:h-64 md:w-64">
-                  <MessageCircle className="h-20 w-20 text-white/90" />
-                  <span className="text-sm font-bold uppercase tracking-widest text-white/80">WeChat</span>
-                </div>
-              )}
+            <div className="overflow-hidden border-b border-gray-100 md:border-b-0 md:border-r md:col-span-2">
+              <ProductThumbnail
+                name={product.name}
+                imageUrl={product.image_url}
+                className="h-64 w-full md:h-full md:min-h-[320px]"
+              />
             </div>
 
             {/* Details */}
