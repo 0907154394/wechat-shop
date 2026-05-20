@@ -1,7 +1,16 @@
 export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as adminClient } from "@supabase/supabase-js";
 import { formatVND } from "@/lib/utils";
+
+function getAdmin() {
+  return adminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 import { Clock, CheckCircle, Truck, XCircle, ChevronLeft, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -30,7 +39,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   if (!order) notFound();
 
-  const { data: orderAccounts } = await supabase
+  const { data: orderAccounts } = await getAdmin()
     .from("wechat_accounts")
     .select("*")
     .eq("order_id", id);
