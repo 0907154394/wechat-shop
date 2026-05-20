@@ -31,8 +31,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   if (!order) notFound();
 
   const { data: orderAccounts } = await supabase
-    .from("order_accounts")
-    .select("*, wechat_accounts(*)")
+    .from("wechat_accounts")
+    .select("*")
     .eq("order_id", id);
 
   const currentStep = statusOrder.indexOf(order.status);
@@ -148,10 +148,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Tài khoản #{i + 1}</p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {[
-                        { label: "Username",      value: oa.wechat_accounts?.username },
-                        { label: "Password",      value: oa.wechat_accounts?.password },
-                        ...(oa.wechat_accounts?.phone_number ? [{ label: "Số điện thoại", value: oa.wechat_accounts.phone_number }] : []),
-                        ...(oa.wechat_accounts?.backup_email ? [{ label: "Email backup",  value: oa.wechat_accounts.backup_email }]  : []),
+                        { label: "Username",      value: oa.username },
+                        { label: "Password",      value: oa.password },
+                        ...(oa.phone_number ? [{ label: "Số điện thoại", value: oa.phone_number }] : []),
+                        ...(oa.backup_email ? [{ label: "Email backup",  value: oa.backup_email }]  : []),
                       ].map(({ label, value }) => (
                         <div key={label} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
                           <p className="mb-1 text-xs font-medium text-gray-400">{label}</p>
