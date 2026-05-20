@@ -409,9 +409,9 @@ export function AccountsManager() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-gray-600">Giá bán (VND)</label>
+                <label className="mb-1.5 block text-xs font-semibold text-gray-600">Giá bán (USDT)</label>
                 <input type="number" value={createPrice} onChange={e => setCreatePrice(e.target.value)}
-                  placeholder="VD: 150000"
+                  placeholder="VD: 5"
                   className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                   onKeyDown={e => e.key === "Enter" && handleCreateKho()}
                 />
