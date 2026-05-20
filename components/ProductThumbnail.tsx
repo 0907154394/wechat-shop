@@ -11,11 +11,18 @@ const DURATIONS: Record<string, string> = {
 };
 
 function detectDuration(name: string): string {
-  const n = name.toLowerCase();
-  if (/\b1\s*(năm|nam)\b/.test(n))     return DURATIONS["1-nam"];
-  if (/\b6\s*(tháng|thang)/.test(n))   return DURATIONS["6-thang"];
-  if (/\b3\s*(tháng|thang)/.test(n))   return DURATIONS["3-thang"];
-  if (/\b1\s*(tháng|thang)/.test(n))   return DURATIONS["1-thang"];
+  const n = name.toLowerCase().normalize("NFC");
+  // Match "X năm" or "X nam"
+  const yearMatch = n.match(/(?:^|[\s\-_])1\s*n(?:ă|a)m(?:$|[\s\-_])/);
+  if (yearMatch) return DURATIONS["1-nam"];
+  // Match "X tháng" or "X thang" — extract number to prevent "16 tháng" → "6 tháng"
+  const monthMatch = n.match(/(?:^|[\s\-_])(\d+)\s*th(?:á|a)ng(?:$|[\s\-_])/);
+  if (monthMatch) {
+    const num = parseInt(monthMatch[1], 10);
+    if (num === 6) return DURATIONS["6-thang"];
+    if (num === 3) return DURATIONS["3-thang"];
+    if (num === 1) return DURATIONS["1-thang"];
+  }
   return "";
 }
 
