@@ -327,7 +327,7 @@ export function AccountsManager() {
           >
             <RefreshCw className={`h-4 w-4 text-gray-400 ${loading ? "animate-spin" : ""}`} />
           </button>
-          <Button onClick={() => setShowCreate(true)} className="gap-1.5">
+          <Button onClick={() => { setShowCreate(true); setCreateName(""); setCreatePrice(""); setCreateError(""); }} className="gap-1.5">
             <Plus className="h-4 w-4" /> Tạo kho mới
           </Button>
         </div>
@@ -342,7 +342,7 @@ export function AccountsManager() {
           </div>
           <p className="text-sm font-medium text-gray-500">Chưa có kho nào</p>
           <p className="mt-1 text-xs text-gray-400">Tạo kho đầu tiên để bắt đầu nhập acc</p>
-          <Button className="mt-5 gap-2" onClick={() => setShowCreate(true)}>
+          <Button className="mt-5 gap-2" onClick={() => { setShowCreate(true); setCreateName(""); setCreatePrice(""); setCreateError(""); }}>
             <Plus className="h-4 w-4" /> Tạo kho mới
           </Button>
         </div>
@@ -393,7 +393,7 @@ export function AccountsManager() {
             {/* Header — fixed */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
               <h3 className="text-base font-bold text-gray-900">Tạo kho mới</h3>
-              <button onClick={() => { setShowCreate(false); setCreateError(""); }} className="rounded-lg p-1 hover:bg-gray-100">
+              <button onClick={() => { setShowCreate(false); setCreateName(""); setCreatePrice(""); setCreateError(""); }} className="rounded-lg p-1 hover:bg-gray-100">
                 <X className="h-4 w-4 text-gray-400" />
               </button>
             </div>
