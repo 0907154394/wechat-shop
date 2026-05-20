@@ -41,7 +41,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
   // Poll Tronscan for recent TRC20 transfers to our address
   const expectedQuant = Math.round(order.usdt_amount * 1_000_000); // USDT has 6 decimals
-  const cutoff = Date.now() - 25 * 60 * 1000; // last 25 minutes
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000; // last 24 hours
 
   let txHash: string | null = null;
   try {

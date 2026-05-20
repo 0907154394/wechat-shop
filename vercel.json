@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/topup-check",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/order-check",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}

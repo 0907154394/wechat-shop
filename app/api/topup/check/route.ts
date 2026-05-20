@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
   // Search Tronscan for a TRC20 USDT transfer matching the exact unique amount
   const expectedQuant = Math.round(topup.amount_usdt * 1_000_000); // USDT has 6 decimals
-  const cutoff = Date.now() - 40 * 60 * 1000; // last 40 minutes
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000; // last 24 hours
 
   let txHash: string | null = null;
   try {
