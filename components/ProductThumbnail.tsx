@@ -11,20 +11,22 @@ const DURATIONS: Record<string, string> = {
 };
 
 function detectDuration(name: string): string {
-  // Strip all diacritics to bypass NFC/NFD encoding ambiguity
   const n = name.toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .normalize("NFC")
+    .replace(/tháng/g, "thang")
+    .replace(/năm/g, "nam")
     .replace(/\s+/g, " ")
     .trim();
-  const monthMatch = n.match(/(?:^| )(\d+) *thang(?= |$)/);
-  if (monthMatch) {
-    const num = parseInt(monthMatch[1], 10);
-    if (num === 6) return DURATIONS["6-thang"];
-    if (num === 3) return DURATIONS["3-thang"];
-    if (num === 1) return DURATIONS["1-thang"];
+  const words = n.split(" ");
+  for (let i = 0; i + 1 < words.length; i++) {
+    if (words[i + 1] === "thang") {
+      const num = parseInt(words[i], 10);
+      if (num === 1) return DURATIONS["1-thang"];
+      if (num === 3) return DURATIONS["3-thang"];
+      if (num === 6) return DURATIONS["6-thang"];
+    }
+    if (words[i] === "1" && words[i + 1] === "nam") return DURATIONS["1-nam"];
   }
-  if (/(?:^| )1 *nam(?= |$)/.test(n)) return DURATIONS["1-nam"];
   return "";
 }
 
