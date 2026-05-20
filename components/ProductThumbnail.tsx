@@ -12,10 +12,10 @@ const DURATIONS: Record<string, string> = {
 
 function detectDuration(name: string): string {
   const n = name.toLowerCase();
-  if (n.includes("1 năm") || n.includes("1nam") || n.includes("1 nam"))       return DURATIONS["1-nam"];
-  if (n.includes("6 tháng") || n.includes("6thang") || n.includes("6 thang")) return DURATIONS["6-thang"];
-  if (n.includes("3 tháng") || n.includes("3thang") || n.includes("3 thang")) return DURATIONS["3-thang"];
-  if (n.includes("1 tháng") || n.includes("1thang") || n.includes("1 thang")) return DURATIONS["1-thang"];
+  if (/\b1\s*(năm|nam)\b/.test(n))     return DURATIONS["1-nam"];
+  if (/\b6\s*(tháng|thang)/.test(n))   return DURATIONS["6-thang"];
+  if (/\b3\s*(tháng|thang)/.test(n))   return DURATIONS["3-thang"];
+  if (/\b1\s*(tháng|thang)/.test(n))   return DURATIONS["1-thang"];
   return "";
 }
 
