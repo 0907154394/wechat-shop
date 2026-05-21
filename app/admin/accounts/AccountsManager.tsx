@@ -347,14 +347,21 @@ export function AccountsManager() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...groupProductsByApp(products)].flatMap(([, group]) => group).map((product) => (
-            <AdminProductCard
-              key={product.id}
-              product={product}
-              stockMap={stockMap}
-              onImport={(p: Product) => { setActiveProduct(p); setPasteText(""); setImportResult(null); }}
-            />
+        <div className="space-y-8">
+          {[...groupProductsByApp(products)].map(([appKey, group]) => (
+            <div key={appKey}>
+              <h2 className="mb-3 text-base font-bold text-gray-700">{getAppLabel(group[0].name)}</h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {group.map((product) => (
+                  <AdminProductCard
+                    key={product.id}
+                    product={product}
+                    stockMap={stockMap}
+                    onImport={(p: Product) => { setActiveProduct(p); setPasteText(""); setImportResult(null); }}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -432,10 +439,9 @@ function AdminProductCard({
         </div>
       </div>
       <div className="flex flex-col gap-1 p-4">
-        <h3 className="truncate font-bold text-gray-900 leading-snug">{getAppLabel(product.name)}</h3>
-        <span className="w-fit rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600">
-          {getDurationLabel(product.name)}
-        </span>
+        <h3 className="truncate font-bold text-gray-900 leading-snug">
+          acc {getAppLabel(product.name).toLowerCase()} {getDurationLabel(product.name).toLowerCase()}
+        </h3>
         <p className="text-sm font-semibold text-emerald-600">{formatVND(product.price)}</p>
         <div className="flex items-center gap-1.5 text-xs text-gray-400">
           <span className={`font-semibold ${s.available > 0 ? "text-emerald-500" : "text-red-400"}`}>{s.available} còn</span>
