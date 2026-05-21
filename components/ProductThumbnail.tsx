@@ -9,13 +9,13 @@ const DURATIONS: Record<string, string> = {
 
 type AppKey = "wechat" | "qq" | "douyin" | "weibo" | "xiaohongshu" | "kuaishou";
 
-const APP_CONFIG: Record<AppKey, { label: string; bg: string; glow: string; icon: string }> = {
-  wechat:      { label: "WeChat",      bg: "linear-gradient(145deg,#051c10 0%,#0a3520 100%)", glow: "#07c160", icon: "https://cdn.simpleicons.org/wechat/white" },
-  qq:          { label: "QQ",          bg: "linear-gradient(145deg,#012f6b 0%,#0052b4 100%)", glow: "#1b74e4", icon: "https://cdn.simpleicons.org/qq/white" },
-  douyin:      { label: "Douyin",      bg: "linear-gradient(145deg,#000000 0%,#1a0a0a 100%)", glow: "#fe2c55", icon: "https://cdn.simpleicons.org/tiktok/white" },
-  weibo:       { label: "Weibo",       bg: "linear-gradient(145deg,#6b0010 0%,#b0001e 100%)", glow: "#e6162d", icon: "https://cdn.simpleicons.org/sinaweibo/white" },
-  xiaohongshu: { label: "Xiaohongshu", bg: "linear-gradient(145deg,#6b0010 0%,#cc0022 100%)", glow: "#ff2442", icon: "https://cdn.simpleicons.org/xiaohongshu/white" },
-  kuaishou:    { label: "Kuaishou",    bg: "linear-gradient(145deg,#6b2800 0%,#cc5200 100%)", glow: "#ff6600", icon: "https://cdn.simpleicons.org/kuaishou/white" },
+const APP_CONFIG: Record<AppKey, { label: string; bg: string; glow: string; localIcon?: string; cdnIcon?: string }> = {
+  wechat:      { label: "WeChat",      bg: "linear-gradient(145deg,#051c10 0%,#0a3520 100%)", glow: "#07c160", cdnIcon: "https://cdn.simpleicons.org/wechat/white" },
+  qq:          { label: "QQ",          bg: "linear-gradient(145deg,#012f6b 0%,#0052b4 100%)", glow: "#1b74e4", localIcon: "/icons/qq.png" },
+  douyin:      { label: "Douyin",      bg: "linear-gradient(145deg,#000000 0%,#1a0a0a 100%)", glow: "#fe2c55", localIcon: "/icons/tiktok.png" },
+  weibo:       { label: "Weibo",       bg: "linear-gradient(145deg,#6b0010 0%,#b0001e 100%)", glow: "#e6162d", localIcon: "/icons/weibo.png" },
+  xiaohongshu: { label: "Xiaohongshu", bg: "linear-gradient(145deg,#6b0010 0%,#cc0022 100%)", glow: "#ff2442", cdnIcon: "https://cdn.simpleicons.org/xiaohongshu/white" },
+  kuaishou:    { label: "Kuaishou",    bg: "linear-gradient(145deg,#6b2800 0%,#cc5200 100%)", glow: "#ff6600", cdnIcon: "https://cdn.simpleicons.org/kuaishou/white" },
 };
 
 function detectApp(name: string): AppKey {
@@ -48,6 +48,29 @@ function detectDuration(name: string): string {
   return "";
 }
 
+function WeChatSVG({ glow }: { glow: string }) {
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: "52%", maxWidth: 120, overflow: "visible", filter: `drop-shadow(0 0 14px ${glow}88) drop-shadow(0 6px 10px rgba(0,0,0,0.6))` }}>
+      <rect x="0" y="0" width="100" height="100" rx="22" ry="22" fill="#4caf2e" />
+      <rect x="0" y="0" width="100" height="100" rx="22" ry="22" fill="url(#wcGrad)" />
+      <defs>
+        <linearGradient id="wcGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#5ecb35" />
+          <stop offset="100%" stopColor="#3da820" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="38" cy="36" rx="24" ry="19" fill="white" />
+      <polygon points="24,52 16,62 36,52" fill="white" />
+      <circle cx="31" cy="35" r="3" fill="#3da820" />
+      <circle cx="44" cy="35" r="3" fill="#3da820" />
+      <ellipse cx="63" cy="54" rx="20" ry="16" fill="white" fillOpacity="0.95" />
+      <polygon points="72,67 80,76 60,67" fill="white" fillOpacity="0.95" />
+      <circle cx="57" cy="53" r="2.5" fill="#3da820" />
+      <circle cx="68" cy="53" r="2.5" fill="#3da820" />
+    </svg>
+  );
+}
+
 interface ProductThumbnailProps {
   name: string;
   imageUrl?: string | null;
@@ -65,15 +88,15 @@ export function ProductThumbnail({ name, imageUrl, className = "", compact = fal
   }
 
   const app = detectApp(name);
-  const { label, bg, glow, icon } = APP_CONFIG[app];
+  const { label, bg, glow, localIcon, cdnIcon } = APP_CONFIG[app];
   const duration = detectDuration(name);
+  const iconSrc = localIcon ?? cdnIcon;
 
   return (
     <div
       className={`relative flex flex-col overflow-hidden ${className}`}
       style={{ background: bg }}
     >
-      {/* Glow orb */}
       <div
         className="absolute"
         style={{
@@ -84,8 +107,6 @@ export function ProductThumbnail({ name, imageUrl, className = "", compact = fal
           background: `radial-gradient(circle, ${glow}30 0%, ${glow}10 40%, transparent 70%)`,
         }}
       />
-
-      {/* Dot pattern */}
       <div
         className="absolute inset-0 opacity-[0.04]"
         style={{
@@ -94,19 +115,21 @@ export function ProductThumbnail({ name, imageUrl, className = "", compact = fal
         }}
       />
 
-      {/* App icon */}
       <div className="relative z-10 flex flex-1 items-center justify-center" aria-hidden>
-        <img
-          src={icon}
-          alt={label}
-          style={{
-            width: "48%", maxWidth: 110,
-            filter: `drop-shadow(0 0 14px ${glow}88) drop-shadow(0 6px 10px rgba(0,0,0,0.6))`,
-          }}
-        />
+        {app === "wechat" ? (
+          <WeChatSVG glow={glow} />
+        ) : (
+          <img
+            src={iconSrc}
+            alt={label}
+            style={{
+              width: "48%", maxWidth: 110,
+              filter: `drop-shadow(0 0 14px ${glow}88) drop-shadow(0 6px 10px rgba(0,0,0,0.6))`,
+            }}
+          />
+        )}
       </div>
 
-      {/* Bottom text */}
       {!compact && (
         <div
           className="relative z-10 px-4 py-4 text-center"
