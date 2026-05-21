@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Anton } from "next/font/google";
+import { Plus_Jakarta_Sans, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 
-const antonFont = Anton({ subsets: ["latin"], weight: "400", display: "swap", variable: "--font-anton" });
+const antonFont = Bebas_Neue({ subsets: ["latin"], weight: "400", display: "swap", variable: "--font-anton" });
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { FloatSupport } from "@/components/FloatSupport";
