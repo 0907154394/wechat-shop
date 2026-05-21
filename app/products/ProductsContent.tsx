@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useLang } from "@/lib/LanguageContext";
 import { tr } from "@/lib/i18n";
-import { formatVND } from "@/lib/utils";
+import { formatVND, groupProductsByApp, getDurationLabel } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, CheckCircle, Zap, ShieldCheck } from "lucide-react";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
@@ -80,8 +81,8 @@ export function ProductsContent({ products, stockMap, isLoggedIn }: Props) {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} isLoggedIn={isLoggedIn} stock={stockMap[product.id] ?? 0} T={T} />
+            {[...groupProductsByApp(products)].map(([appKey, group]) => (
+              <AppGroupCard key={appKey} group={group} stockMap={stockMap} isLoggedIn={isLoggedIn} T={T} />
             ))}
           </div>
         )}
@@ -90,17 +91,20 @@ export function ProductsContent({ products, stockMap, isLoggedIn }: Props) {
   );
 }
 
-function ProductCard({ product, isLoggedIn, stock, T }: {
-  product: Product; isLoggedIn: boolean; stock: number;
+function AppGroupCard({ group, stockMap, isLoggedIn, T }: {
+  group: Product[]; stockMap: Record<string, number>; isLoggedIn: boolean;
   T: ReturnType<typeof tr>["productsPage"];
 }) {
+  const [idx, setIdx] = useState(0);
+  const product = group[Math.min(idx, group.length - 1)];
+  const stock = stockMap[product.id] ?? 0;
   const inStock = stock > 0;
   const href = inStock ? (isLoggedIn ? `/products/${product.id}` : "/login?tab=register") : "#";
 
   return (
     <div className="flex flex-col rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-lg hover:border-emerald-200 overflow-hidden">
-      <div className="relative h-56 w-full shrink-0">
-        <ProductThumbnail name={product.name} imageUrl={product.image_url} className="h-full w-full" />
+      <div className="relative h-52 w-full shrink-0">
+        <ProductThumbnail name={product.name} imageUrl={(product as any).image_url} className="h-full w-full" compact />
         <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold backdrop-blur-sm ${
           inStock ? "bg-emerald-500/90 text-white" : "bg-gray-800/80 text-gray-300"
         }`}>
@@ -108,9 +112,22 @@ function ProductCard({ product, isLoggedIn, stock, T }: {
         </span>
       </div>
 
+      {group.length > 1 && (
+        <div className="flex flex-wrap gap-1.5 px-5 pt-4">
+          {group.map((p, i) => (
+            <button key={p.id} onClick={() => setIdx(i)}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                i === idx ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}>
+              {getDurationLabel(p.name)}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col p-5">
         <h3 className="mb-1 font-bold text-gray-900 leading-snug">{product.name}</h3>
-        <p className="mb-3 text-sm text-gray-500 leading-relaxed line-clamp-2">{product.description}</p>
+        <p className="mb-3 text-sm text-gray-500 leading-relaxed line-clamp-2">{(product as any).description}</p>
 
         <div className="mb-4 space-y-1.5">
           {T.cardFeatures.map(f => (

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertCircle, RefreshCw, Plus, ArrowLeft, X, FileSpreadsheet } from "lucide-react";
-import { formatVND } from "@/lib/utils";
+import { formatVND, groupProductsByApp, getDurationLabel } from "@/lib/utils";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import * as XLSX from "xlsx";
 
@@ -348,41 +348,14 @@ export function AccountsManager() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map(p => {
-            const s       = stockMap[p.id] ?? { available: 0, sold: 0 };
-            const isEmpty = s.available === 0;
-            return (
-              <div key={p.id} className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md hover:ring-gray-200">
-                {/* Thumbnail — compact so icon fills full height without text bar */}
-                <div className="relative h-44">
-                  <ProductThumbnail name={p.name} className="h-full w-full" compact />
-                  {/* Stock badge */}
-                  <div className={`absolute right-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-bold text-white shadow backdrop-blur-sm ${
-                    isEmpty ? "bg-red-500" : "bg-black/55"
-                  }`}>
-                    {isEmpty ? "Hết hàng" : `${s.available} acc`}
-                  </div>
-                </div>
-
-                {/* Card body */}
-                <div className="flex flex-col gap-1 p-4">
-                  <h3 className="truncate font-bold text-gray-900 leading-snug">{p.name}</h3>
-                  <p className="text-sm font-semibold text-emerald-600">{formatVND(p.price)}</p>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                    <span className={`font-semibold ${s.available > 0 ? "text-emerald-500" : "text-red-400"}`}>{s.available} còn</span>
-                    <span className="text-gray-200">·</span>
-                    <span>{s.sold} đã bán</span>
-                  </div>
-                  <button
-                    onClick={() => { setActiveProduct(p); setPasteText(""); setImportResult(null); }}
-                    className="mt-2 w-full rounded-xl bg-gray-900 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-gray-700 active:scale-[.98]"
-                  >
-                    Nhập acc →
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+          {[...groupProductsByApp(products)].map(([appKey, group]) => (
+            <AdminAppGroupCard
+              key={appKey}
+              group={group}
+              stockMap={stockMap}
+              onImport={(p) => { setActiveProduct(p); setPasteText(""); setImportResult(null); }}
+            />
+          ))}
         </div>
       )}
 
@@ -434,6 +407,59 @@ export function AccountsManager() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function AdminAppGroupCard({
+  group,
+  stockMap,
+  onImport,
+}: {
+  group: { id: string; name: string; price: number; stock: number }[];
+  stockMap: Record<string, { available: number; sold: number }>;
+  onImport: (p: { id: string; name: string; price: number; stock: number }) => void;
+}) {
+  const [idx, setIdx] = useState(0);
+  const selected = group[Math.min(idx, group.length - 1)];
+  const s = stockMap[selected.id] ?? { available: 0, sold: 0 };
+  const isEmpty = s.available === 0;
+
+  return (
+    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md hover:ring-gray-200">
+      <div className="relative h-44">
+        <ProductThumbnail name={selected.name} className="h-full w-full" compact />
+        <div className={`absolute right-2.5 top-2.5 rounded-full px-2.5 py-1 text-[10px] font-bold text-white shadow backdrop-blur-sm ${isEmpty ? "bg-red-500" : "bg-black/55"}`}>
+          {isEmpty ? "Hết hàng" : `${s.available} acc`}
+        </div>
+      </div>
+
+      {group.length > 1 && (
+        <div className="flex flex-wrap gap-1.5 px-4 pt-3">
+          {group.map((p, i) => (
+            <button key={p.id} onClick={() => setIdx(i)}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                i === idx ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}>
+              {getDurationLabel(p.name)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-1 p-4">
+        <h3 className="truncate font-bold text-gray-900 leading-snug">{selected.name}</h3>
+        <p className="text-sm font-semibold text-emerald-600">{formatVND(selected.price)}</p>
+        <div className="flex items-center gap-1.5 text-xs text-gray-400">
+          <span className={`font-semibold ${s.available > 0 ? "text-emerald-500" : "text-red-400"}`}>{s.available} còn</span>
+          <span className="text-gray-200">·</span>
+          <span>{s.sold} đã bán</span>
+        </div>
+        <button onClick={() => onImport(selected)}
+          className="mt-2 w-full rounded-xl bg-gray-900 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-gray-700 active:scale-[.98]">
+          Nhập acc →
+        </button>
+      </div>
     </div>
   );
 }
