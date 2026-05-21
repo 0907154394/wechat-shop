@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Anton } from "next/font/google";
 import "./globals.css";
+
+const antonFont = Anton({ subsets: ["latin"], weight: "400", display: "swap", variable: "--font-anton" });
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { FloatSupport } from "@/components/FloatSupport";
@@ -34,7 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="vi">
-      <body className={`${font.className} bg-gray-50 text-gray-900 antialiased`}>
+      <body className={`${font.className} ${antonFont.variable} bg-gray-50 text-gray-900 antialiased`}>
         <LanguageProvider>
           {!isAdminRoute && <Navbar isAdmin={isAdmin} />}
           <main className={isAdminRoute ? "min-h-screen" : "min-h-[calc(100vh-4rem)]"}>

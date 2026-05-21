@@ -136,8 +136,14 @@ export function ProductThumbnail({ name, imageUrl, className = "", compact = fal
           style={{ background: "rgba(0,0,0,0.55)", borderTop: `1px solid ${glow}40` }}
         >
           <p
-            className="truncate font-black leading-none tracking-widest text-white uppercase"
-            style={{ fontSize: 18, letterSpacing: "0.12em" }}
+            className="truncate uppercase"
+            style={{
+              fontFamily: "var(--font-anton), Anton, sans-serif",
+              fontSize: 20,
+              letterSpacing: "0.08em",
+              color: "white",
+              textShadow: `0 0 12px ${glow}, 0 0 24px ${glow}88, 0 2px 4px rgba(0,0,0,0.8)`,
+            }}
           >
             {label}{duration ? ` · ${duration}` : ""}
           </p>
