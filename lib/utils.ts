@@ -61,6 +61,15 @@ export function getDurationLabel(name: string): string {
   return DURATION_LABELS[detectDurationKey(name)] ?? "Cơ bản";
 }
 
+export function detectCountryCode(name: string): string | null {
+  const match = name.match(/\+\d{1,3}/);
+  return match ? match[0] : null;
+}
+
+export function stripCountryCode(name: string): string {
+  return name.replace(/\+\d{1,3}\s*/g, "").replace(/\s+/g, " ").trim();
+}
+
 export function getDurationOrder(name: string): number {
   const idx = DURATION_ORDER.indexOf(detectDurationKey(name));
   return idx === -1 ? 99 : idx;

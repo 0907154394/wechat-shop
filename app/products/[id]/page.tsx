@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as adminClient } from "@supabase/supabase-js";
-import { generateOrderCode } from "@/lib/utils";
+import { generateOrderCode, detectApp, detectCountryCode, stripCountryCode } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 import { ProductDetailContent } from "./ProductDetailContent";
 
@@ -33,6 +33,27 @@ export default async function ProductDetailPage({ params, searchParams }: { para
   if (!product) notFound();
 
   const p = product as Product;
+
+  // Fetch country code variants (same app + duration, different country code)
+  let countryVariants: { id: string; code: string; stock: number }[] = [];
+  const currentCode = detectCountryCode(p.name);
+  if (currentCode) {
+    const { data: allProducts } = await sb.from("products").select("id, name").eq("is_active", true);
+    const baseName = stripCountryCode(p.name);
+    const siblings = (allProducts ?? []).filter(other =>
+      detectCountryCode(other.name) !== null &&
+      detectApp(other.name) === detectApp(p.name) &&
+      stripCountryCode(other.name) === baseName
+    );
+    countryVariants = await Promise.all(
+      siblings.map(async (other) => {
+        const { count } = await sb.from("wechat_accounts")
+          .select("*", { count: "exact", head: true })
+          .eq("product_id", other.id).eq("status", "available");
+        return { id: other.id, code: detectCountryCode(other.name)!, stock: count ?? 0 };
+      })
+    );
+  }
 
   // Load rate limit settings
   const { data: settingsRows } = await sb.from("settings").select("key, value").in("key", [
@@ -86,6 +107,7 @@ export default async function ProductDetailPage({ params, searchParams }: { para
       orderError={sp.error ?? null}
       orderErrorLimit={sp.limit ? parseInt(sp.limit) : null}
       balance={balance}
+      countryVariants={countryVariants}
     />
   );
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLang } from "@/lib/LanguageContext";
 import { tr } from "@/lib/i18n";
-import { formatVND } from "@/lib/utils";
+import { formatVND, detectCountryCode } from "@/lib/utils";
 import { CheckCircle, Zap, ShieldCheck, Clock, ChevronLeft, Star, ChevronDown, Package } from "lucide-react";
 import { BuyBox } from "./BuyBox";
 import { ReviewSection } from "./ReviewSection";
@@ -21,6 +21,8 @@ interface Review {
   created_at: string;
 }
 
+interface CountryVariant { id: string; code: string; stock: number; }
+
 interface Props {
   product: Product;
   realStock: number;
@@ -33,11 +35,12 @@ interface Props {
   orderError: string | null;
   orderErrorLimit: number | null;
   balance: number;
+  countryVariants: CountryVariant[];
 }
 
 export function ProductDetailContent({
   product, realStock, reviews, avgRating, eligibleOrderId, hasReviewed, createOrderAction,
-  maxQtyPerOrder, orderError, orderErrorLimit, balance,
+  maxQtyPerOrder, orderError, orderErrorLimit, balance, countryVariants,
 }: Props) {
   const { lang } = useLang();
   const T = tr(lang).productsPage;
@@ -96,6 +99,29 @@ export function ProductDetailContent({
                   <p className="mt-3 text-sm leading-relaxed text-gray-500">{product.description}</p>
                 )}
               </div>
+
+              {countryVariants.length > 1 && (
+                <div className="mb-4 border-t border-gray-100 pt-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Đầu số</p>
+                  <div className="flex flex-wrap gap-2">
+                    {countryVariants.map((v) => {
+                      const isCurrent = v.id === product.id;
+                      return (
+                        <Link key={v.id} href={`/products/${v.id}`}
+                          className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
+                            isCurrent
+                              ? "bg-emerald-500 text-white"
+                              : v.stock > 0
+                                ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                : "bg-gray-100 text-gray-400 line-through cursor-not-allowed pointer-events-none"
+                          }`}>
+                          {v.code}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="mb-5 border-t border-gray-100 pt-4">
                 <span className="text-3xl font-black text-emerald-600">{formatVND(product.price)}</span>
