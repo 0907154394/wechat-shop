@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertCircle, RefreshCw, Plus, ArrowLeft, X, FileSpreadsheet } from "lucide-react";
-import { formatVND, groupProductsByApp } from "@/lib/utils";
+import { formatVND, groupProductsByApp, getAppLabel, getDurationLabel } from "@/lib/utils";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import * as XLSX from "xlsx";
 
@@ -432,7 +432,10 @@ function AdminProductCard({
         </div>
       </div>
       <div className="flex flex-col gap-1 p-4">
-        <h3 className="truncate font-bold text-gray-900 leading-snug">{product.name}</h3>
+        <h3 className="truncate font-bold text-gray-900 leading-snug">{getAppLabel(product.name)}</h3>
+        <span className="w-fit rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600">
+          {getDurationLabel(product.name)}
+        </span>
         <p className="text-sm font-semibold text-emerald-600">{formatVND(product.price)}</p>
         <div className="flex items-center gap-1.5 text-xs text-gray-400">
           <span className={`font-semibold ${s.available > 0 ? "text-emerald-500" : "text-red-400"}`}>{s.available} còn</span>

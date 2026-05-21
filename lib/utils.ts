@@ -16,6 +16,15 @@ export const formatVND = formatUSDT;
 
 export type AppKey = "wechat" | "qq" | "douyin" | "weibo" | "xiaohongshu" | "kuaishou";
 
+const APP_LABELS: Record<AppKey, string> = {
+  wechat: "WeChat", qq: "QQ", douyin: "Douyin",
+  weibo: "Weibo", xiaohongshu: "Xiaohongshu", kuaishou: "Kuaishou",
+};
+
+export function getAppLabel(name: string): string {
+  return APP_LABELS[detectApp(name)];
+}
+
 export function detectApp(name: string): AppKey {
   const n = name.toLowerCase().normalize("NFC");
   if (/\bqq\b/.test(n)) return "qq";
@@ -28,7 +37,7 @@ export function detectApp(name: string): AppKey {
 
 const DURATION_ORDER = ["", "1-thang", "3-thang", "6-thang", "1-nam"];
 const DURATION_LABELS: Record<string, string> = {
-  "": "Cơ bản", "1-thang": "1 Tháng", "3-thang": "3 Tháng", "6-thang": "6 Tháng", "1-nam": "1 Năm",
+  "": "Mới", "1-thang": "1 Tháng", "3-thang": "3 Tháng", "6-thang": "6 Tháng", "1-nam": "1 Năm",
 };
 
 function detectDurationKey(name: string): string {
