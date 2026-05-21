@@ -145,7 +145,7 @@ export function ProductThumbnail({ name, imageUrl, className = "", compact = fal
               textShadow: `0 0 12px ${glow}, 0 0 24px ${glow}88, 0 2px 4px rgba(0,0,0,0.8)`,
             }}
           >
-            {label}{duration ? ` · ${duration}` : ""}
+            {label}{duration ? ` ${duration}` : ""}
           </p>
         </div>
       )}
